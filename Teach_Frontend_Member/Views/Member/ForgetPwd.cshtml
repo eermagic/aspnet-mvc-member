@@ -1,0 +1,78 @@
+﻿<div id="VuePage">
+    <!--使用 Bootstrap 設計表單-->
+    <div class="panel panel-primary">
+        <div class="panel-heading">忘記密碼範例</div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label>帳號</label>
+                <input type="text" class="form-control" v-model="form.UserID">
+            </div>
+        </div>
+        <div class="panel-footer">
+            <button type="button" class="btn btn-primary" v-on:click="SendMailToken()">寄送驗證碼</button>
+        </div>
+    </div>
+
+    <!--使用 Bootstrap Modal 樣式，當執行有錯誤時，顯示錯誤訊息-->
+    <div class="modal fade" id="ErrorAlert" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">錯誤訊息</h4>
+                </div>
+                <div class="modal-body" id="ErrorMsg" style="overflow-x:auto;width:100%;">
+
+                </div>
+            </div>
+        </div>
+    </div><!-- /.modal -->
+</div>
+@section scripts{
+    <script>
+        var VuePage = new Vue({
+            el: '#VuePage'
+            , data: function () {
+                var data = {
+                    form: {}
+                };
+                return data;
+            }
+            , methods: {
+                // 前端驗證權杖
+                GetToken: function () {
+                    var token = '@Html.AntiForgeryToken()';
+                    token = $(token).val();
+                    return token;
+                }
+                // 寄送驗證碼
+                , SendMailToken: function () {
+                    var self = this;
+
+                    // 組合表單資料
+                    var postData = {};
+                    postData['UserID'] = self.form.UserID;
+
+                    // 使用 jQuery Ajax 傳送至後端
+                    $.ajax({
+                        url:'@Url.Action("SendMailToken", "Member")',
+                        method:'POST',
+                        dataType:'json',
+                        data: { inModel: postData, __RequestVerificationToken: self.GetToken() },
+                        success: function (datas) {
+                            if (datas.ErrMsg) {
+                                alert(datas.ErrMsg);
+                                return;
+                            }
+                            alert(datas.ResultMsg);
+                        },
+                        error: function (err) {
+                            $('#ErrorMsg').html(err.responseText);
+                            $('#ErrorAlert').modal('toggle');
+                        }
+                    });
+                }
+            }
+        })
+    </script>
+}

@@ -1,0 +1,87 @@
+﻿<div id="VuePage">
+    <!--使用 Bootstrap 設計註冊表單-->
+    <div class="panel panel-primary">
+        <div class="panel-heading">註冊頁面範例</div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label>帳號</label>
+                <input type="text" class="form-control" v-model="form.UserID">
+            </div>
+            <div class="form-group">
+                <label>密碼</label>
+                <input type="password" class="form-control" v-model="form.UserPwd">
+            </div>
+            <div class="form-group">
+                <label>姓名</label>
+                <input type="text" class="form-control" v-model="form.UserName">
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="text" class="form-control" v-model="form.UserEmail">
+            </div>
+        </div>
+        <div class="panel-footer">
+            <button type="button" class="btn btn-primary" v-on:click="DoRegister()">註冊</button>
+        </div>
+    </div>
+
+    <!--使用 Bootstrap Modal 樣式，當執行有錯誤時，顯示錯誤訊息-->
+    <div class="modal fade" id="ErrorAlert" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">錯誤訊息</h4>
+                </div>
+                <div class="modal-body" id="ErrorMsg" style="overflow-x:auto;width:100%;">
+
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+</div>
+@section scripts {
+    <script>
+        var VuePage = new Vue({
+            el: '#VuePage'
+            , data: function () {
+                var data = {
+                    form: {}
+                };
+                return data;
+            }
+            , methods: {
+                // 執行註冊按鈕
+                DoRegister: function () {
+                    var self = this;
+
+                    // 組合表單資料
+                    var postData = {};
+                    postData['UserID'] = self.form.UserID;
+                    postData['UserPwd'] = self.form.UserPwd;
+                    postData['UserName'] = self.form.UserName;
+                    postData['UserEmail'] = self.form.UserEmail;
+
+                    // 使用 jQuery Ajax 傳送至後端
+                    $.ajax({
+                        url:'@Url.Content("~/Member/DoRegister")',
+                        method:'POST',
+                        dataType:'json',
+                        data: { inModel: postData },
+                        success: function (datas) {
+                            if (datas.ErrMsg) {
+                                alert(datas.ErrMsg);
+                                return;
+                            }
+                            alert(datas.ResultMsg);
+                        },
+                        error: function (err) {
+                            $('#ErrorMsg').html(err.responseText);
+                            $('#ErrorAlert').modal('toggle');
+                        },
+                    });
+                }
+            }
+        })
+    </script>
+}

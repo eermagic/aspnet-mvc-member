@@ -1,0 +1,97 @@
+﻿<div id="VuePage">
+    <!--使用 Bootstrap 設計登入表單-->
+    <div class="panel panel-primary">
+        <div class="panel-heading">登入頁面範例</div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label>帳號</label>
+                <input type="text" class="form-control" v-model="form.UserID">
+            </div>
+            <div class="form-group">
+                <label>密碼</label>
+                <input type="password" class="form-control" v-model="form.UserPwd">
+            </div>
+        </div>
+        <div class="panel-footer">
+            <div class="checkbox">
+                <label>
+                    <input class="form-check-input" type="checkbox" value="true" id="chkKeepLogin" v-model="form.KeepLogin">
+                    保持登入
+                </label>
+            </div>
+            <button type="button" class="btn btn-primary" v-on:click="DoLogin()">登入</button>
+            @Html.ActionLink("忘記密碼", "ForgetPwd", "Member")
+        </div>
+    </div>
+
+    <!--使用 Bootstrap Modal 樣式，當執行有錯誤時，顯示錯誤訊息-->
+    <div class="modal fade" id="ErrorAlert" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">錯誤訊息</h4>
+                </div>
+                <div class="modal-body" id="ErrorMsg" style="overflow-x:auto;width:100%;">
+
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+</div>
+@section scripts {
+    <script>
+        var VuePage = new Vue({
+            el: '#VuePage'
+            , data: {
+                form: {
+                    UserID: ""
+                    , UserPwd: ""
+                    , KeepLogin:""
+                }
+            }
+            , mounted: function () {
+                let UserKeepLogin = '@ViewData["UserKeepLogin"]';
+                if (UserKeepLogin == "Y") {
+                    alert("已經登入過了喔");
+                    // 導向到修改個人資料頁面
+                    window.location = '@Url.Content("~/Member/EditProfile")';
+                }
+            }
+            , methods: {
+                // 執行登入按鈕
+                DoLogin: function () {
+                    var self = this;
+
+                    // 組合表單資料
+                    var postData = {};
+                    postData['UserID'] = self.form.UserID;
+                    postData['UserPwd'] = self.form.UserPwd;
+                    postData['KeepLogin'] = self.form.KeepLogin;
+
+                    // 使用 jQuery Ajax 傳送至後端
+                    $.ajax({
+                        url:'@Url.Content("~/Member/DoLogin")',
+                        method:'POST',
+                        dataType:'json',
+                        data: { inModel: postData },
+                        success: function (datas) {
+                            if (datas.ErrMsg) {
+                                alert(datas.ErrMsg);
+                                return;
+                            }
+                            alert(datas.ResultMsg);
+
+                            // 導向到修改個人資料頁面
+                            window.location = '@Url.Content("~/Member/EditProfile")';
+                        },
+                        error: function (err) {
+                            $('#ErrorMsg').html(err.responseText);
+                            $('#ErrorAlert').modal('toggle');
+                        },
+                    });
+                }
+            }
+        })
+    </script>
+}

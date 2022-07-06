@@ -1,0 +1,97 @@
+﻿<div id="VuePage">
+    <!--使用 Bootstrap 設計重設密碼表單-->
+    <div class="panel panel-primary">
+        <div class="panel-heading">重新密碼範例</div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>新密碼</label>
+                        <input type="password" class="form-control" v-model="form.NewUserPwd">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>確認新密碼</label>
+                        <input type="password" class="form-control" v-model="form.CheckUserPwd">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel-footer">
+            <button type="button" class="btn btn-primary" v-on:click="DoResetPwd()">重設密碼</button>
+        </div>
+    </div>
+
+    <!--使用 Bootstrap Modal 樣式，當執行有錯誤時，顯示錯誤訊息-->
+    <div class="modal fade" id="ErrorAlert" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">錯誤訊息</h4>
+                </div>
+                <div class="modal-body" id="ErrorMsg" style="overflow-x:auto;width:100%;">
+                </div>
+            </div>
+        </div>
+    </div><!-- /.modal -->
+</div>
+@section scripts{
+    <script>
+        var VuePage = new Vue({
+            el: '#VuePage'
+            , data: function () {
+                var data = {
+                    form: {}
+                };
+                return data;
+            }
+            , created: function () {
+                var ErrorMsg = '@ViewData["ErrorMsg"]';
+                if (ErrorMsg != '') {
+                    alert(ErrorMsg);
+                    // 解析驗證碼失敗，導回登入頁面
+                    window.location = '@Url.Action("Login", "Member")';
+                }
+            }
+            , methods: {
+                // 前端驗證權杖
+                GetToken: function () {
+                    var token = '@Html.AntiForgeryToken()';
+                    token = $(token).val();
+                    return token;
+                }
+                 // 重設密碼
+                , DoResetPwd: function () {
+                    var self = this;
+
+                    // 組合表單資料
+                    var postData = {};
+                    postData['NewUserPwd'] = self.form.NewUserPwd;
+                    postData['CheckUserPwd'] = self.form.CheckUserPwd;
+
+                    // 使用 jQuery Ajax 傳送至後端
+                    $.ajax({
+                        url:'@Url.Action("DoResetPwd", "Member")',
+                        method:'POST',
+                        dataType:'json',
+                        data: { inModel: postData, __RequestVerificationToken: self.GetToken() },
+                        success: function (datas) {
+                            if (datas.ErrMsg) {
+                                alert(datas.ErrMsg);
+                                return;
+                            }
+                            alert(datas.ResultMsg);
+                        },
+                        error: function (err) {
+                            $('#ErrorMsg').html(err.responseText);
+                            $('#ErrorAlert').modal('toggle');
+                        },
+                    });
+                }
+            }
+        })
+    </script>
+}
+
