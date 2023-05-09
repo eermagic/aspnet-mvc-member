@@ -32,10 +32,8 @@ namespace Teach_Frontend_Member.Controllers
             {
                 if (!string.IsNullOrEmpty(Request.Cookies["UserKeepLogin"].Value))
                 {
-                    string ckUserKeepLoginVerify = Request.Cookies["UserKeepLogin"].Value;
-
                     // 取出帳號
-                    string UserID = ckUserKeepLoginVerify.Split('|')[0];
+                    string UserID = Request.Cookies["UserKeepLogin"].Value;
 
                     // 資料庫連線
                     string connStr = System.Web.Configuration.WebConfigurationManager.ConnectionStrings["ConnDB"].ConnectionString;
