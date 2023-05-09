@@ -34,9 +34,8 @@ namespace Teach_Frontend_Member.Controllers
                 {
                     string ckUserKeepLoginVerify = Request.Cookies["UserKeepLogin"].Value;
 
-                    // 取出帳號密碼
+                    // 取出帳號
                     string UserID = ckUserKeepLoginVerify.Split('|')[0];
-                    string UserPwd = ckUserKeepLoginVerify.Split('|')[1];
 
                     // 資料庫連線
                     string connStr = System.Web.Configuration.WebConfigurationManager.ConnectionStrings["ConnDB"].ConnectionString;
@@ -45,14 +44,13 @@ namespace Teach_Frontend_Member.Controllers
                     conn.Open();
 
                     // 檢查帳號、密碼是否正確
-                    string sql = "select * from Member where UserID = @UserID and UserPwd = @UserPwd";
+                    string sql = "select * from Member where UserID = @UserID";
                     SqlCommand cmd = new SqlCommand();
                     cmd.CommandText = sql;
                     cmd.Connection = conn;
 
                     // 使用參數化填值
                     cmd.Parameters.AddWithValue("@UserID", UserID);
-                    cmd.Parameters.AddWithValue("@UserPwd", UserPwd);
 
                     // 執行資料庫查詢動作
                     SqlDataAdapter adpt = new SqlDataAdapter();
@@ -72,7 +70,7 @@ namespace Teach_Frontend_Member.Controllers
 
                         // 繼續延長 Cookie 時間
                         HttpCookie ckUserKeepLogin = new HttpCookie("UserKeepLogin"); //Cookie 名稱
-                        ckUserKeepLogin.Value = UserID + "|" + UserPwd;//Cookie 值
+                        ckUserKeepLogin.Value = UserID;//Cookie 值
                         ckUserKeepLogin.Expires = DateTime.Now.AddDays(7); //Cookie 有效期限
                         ckUserKeepLogin.HttpOnly = true; //防止 XSS 攻擊
                         Response.Cookies.Add(ckUserKeepLogin);
@@ -224,7 +222,7 @@ namespace Teach_Frontend_Member.Controllers
                         if (inModel.KeepLogin == "true")
                         {
                             HttpCookie ckUserKeepLogin = new HttpCookie("UserKeepLogin"); //Cookie 名稱
-                            ckUserKeepLogin.Value = inModel.UserID + "|" + CheckPwd; //Cookie 值
+                            ckUserKeepLogin.Value = inModel.UserID; //Cookie 值
                             ckUserKeepLogin.Expires = DateTime.Now.AddDays(7); //Cookie 有效期限
                             ckUserKeepLogin.HttpOnly = true; //防止 XSS 攻擊
                             Response.Cookies.Add(ckUserKeepLogin);
